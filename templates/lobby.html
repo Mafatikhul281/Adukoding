@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Duel Kode</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" />
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.12/ace.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Arena Duel</h2>
+    <div id="question"></div>
+    <div id="editor"></div>
+    <button class="neon-button" id="submit-btn">Kirim Jawaban</button>
+    <div id="status"></div>
+    <div id="scoreboard"></div>
+  </div>
+
+  <script>
+    const socket = io();
+    const username = "{{ session['username'] }}";
+    const room = "{{ room_code }}";
+
+    const editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.session.setMode("ace/mode/python");
+
+    socket.emit('join', { username, room });
+    socket.emit('enter_lobby', { room });
+
+    socket.on('start_question', data => {
+      document.getElementById('question').innerText = data.question;
+      editor.setValue('');
+    });
+
+    socket.on('correct_answer', data => {
+      document.getElementById('status').innerText = `${data.username} menjawab dengan benar!`;
+      document.getElementById('question').innerText = data.question;
+      editor.setValue('');
+    });
+
+    socket.on('code_result', data => {
+      if (data.username === username) {
+        document.getElementById('status').innerText = "Jawabanmu salah, coba lagi.";
+      }
+    });
+
+    socket.on('game_over', data => {
+      document.getElementById('question').innerText = "Game selesai!";
+      document.getElementById('status').innerText = `Pemenang: ${data.winner}`;
+      let scoreText = "Skor Akhir:\n";
+      for (let p in data.scores) {
+        scoreText += `${p}: ${data.scores[p]}\n`;
+      }
+      document.getElementById('scoreboard').innerText = scoreText;
+    });
+
+    document.getElementById('submit-btn').addEventListener('click', () => {
+      const code = editor.getValue();
+      socket.emit('submit_code', { code, username, room });
+    });
+  </script>
+</body>
+</html>

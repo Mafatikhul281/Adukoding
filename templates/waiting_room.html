@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Waiting Room</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" />
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <h2>Lobby: {{ room_code }}</h2>
+    <p id="player-list">Menunggu pemain lain...</p>
+    <button id="start-btn" class="neon-button" style="display:none;">Mulai Permainan</button>
+  </div>
+
+  <script>
+    const socket = io();
+    const username = "{{ session['username'] }}";
+    const room = "{{ room_code }}";
+
+    socket.emit('join', { username, room });
+
+    socket.on('player_joined', data => {
+      const players = data.players;
+      document.getElementById('player-list').innerText = 'Pemain: ' + players.join(', ');
+      if (players.length === 2 && players[0] === username) {
+        document.getElementById('start-btn').style.display = 'inline-block';
+      }
+    });
+
+    document.getElementById('start-btn').addEventListener('click', () => {
+      socket.emit('start_game', { room });
+    });
+    
+    socket.on('game_started', data => {
+      window.location.href = `/lobby/${data.room}`;
+    });
+  </script>
+</body>
+</html>

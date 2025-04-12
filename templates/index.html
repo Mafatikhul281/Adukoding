@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Code Duel</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='main.css') }}" />
+</head>
+<body>
+  <div class="container">
+    <h1>Code Duel Arena</h1>
+    <form action="/create_lobby" method="post">
+      <input type="text" name="username" placeholder="Masukkan nama kamu" required>
+      <button class="neon-button" type="submit">Create Lobby</button>
+    </form>
+    <form action="/join_lobby" method="post">
+      <input type="text" name="username" placeholder="Masukkan nama kamu" required>
+      <input type="text" name="room_code" placeholder="Kode Lobby" required>
+      <button class="neon-button" type="submit">Join Lobby</button>
+    </form>
+  </div>
+</body>
+</html>
